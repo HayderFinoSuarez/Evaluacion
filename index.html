@@ -69,6 +69,24 @@
             background-color: #e9ecef;
             border-radius: 5px;
         }
+        .progress-container {
+            width: 100%;
+            background-color: #e9ecef;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+        .progress-bar {
+            height: 30px;
+            background-color: #4CAF50;
+            border-radius: 5px;
+            width: 0%;
+            transition: width 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
     </style>
 </head>
 <body>
@@ -308,7 +326,11 @@
 
     <div id="result-section" class="section">
         <h2>Resultados de Evaluación</h2>
-        <div id="total-score">Puntaje Total: 0/120</div>
+        <div id="total-score">Puntaje Total: 0/100</div>
+        
+        <div class="progress-container">
+            <div id="progress-bar" class="progress-bar">0%</div>
+        </div>
         
         <div class="score-details">
             <div class="score-category">
@@ -400,8 +422,26 @@
             document.getElementById('strategy-score').textContent = `${scores['estrategico']}/12`;
             document.getElementById('impact-score').textContent = `${scores['impacto']}/12`;
 
-            const totalScore = Object.values(scores).reduce((a, b) => a + b, 0);
-            document.getElementById('total-score').textContent = `Puntaje Total: ${totalScore}/96`;
+            const totalScore = Math.min(Object.values(scores).reduce((a, b) => a + b, 0), 100);
+            document.getElementById('total-score').textContent = `Puntaje Total: ${totalScore}/100`;
+            
+            // Calcular porcentaje de avance
+            const totalQuestions = 32; // 8 secciones * 4 preguntas cada una
+            const answeredQuestions = document.querySelectorAll('input[type="radio"]:checked').length;
+            const progressPercentage = Math.round((answeredQuestions / totalQuestions) * 100);
+            
+            const progressBar = document.getElementById('progress-bar');
+            progressBar.style.width = `${progressPercentage}%`;
+            progressBar.textContent = `${progressPercentage}%`;
+            
+            // Cambiar color según el porcentaje
+            if (progressPercentage < 30) {
+                progressBar.style.backgroundColor = '#f44336';
+            } else if (progressPercentage < 70) {
+                progressBar.style.backgroundColor = '#ff9800';
+            } else {
+                progressBar.style.backgroundColor = '#4CAF50';
+            }
 
             updateCharts(scores);
         }
@@ -506,6 +546,9 @@
         document.querySelectorAll('input[type="radio"]').forEach(radio => {
             radio.addEventListener('change', updateScores);
         });
+        
+        // Inicializar la barra de progreso
+        updateScores();
     </script>
 </body>
 </html>
