@@ -1,554 +1,581 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <title>Dashboard de Evaluación de Proyecto de Software</title>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <style>
-        body {
-            font-family: 'Arial', sans-serif;
-            margin: 0;
-            padding: 20px;
-            background-color: #f4f4f4;
-        }
-        .dashboard {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
-        }
-        .section {
-            background-color: white;
-            border-radius: 8px;
-            padding: 20px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-        }
-        .section h2 {
-            border-bottom: 2px solid #007bff;
-            padding-bottom: 10px;
-            color: #333;
-        }
-        .criteria {
-            margin-bottom: 15px;
-        }
-        .criteria label {
-            display: block;
-            margin-bottom: 5px;
-            font-weight: bold;
-        }
-        .criteria input[type="radio"] {
-            margin-right: 10px;
-        }
-        #result-section {
-            grid-column: 1 / -1;
-        }
-        .chart-container {
-            width: 100%;
-            height: 300px;
-        }
-        .graph-section {
-            display: flex;
-            justify-content: space-between;
-            margin-top: 20px;
-        }
-        #total-score {
-            text-align: center;
-            font-size: 2em;
-            color: #007bff;
-            margin: 20px 0;
-        }
-        .score-details {
-            display: flex;
-            justify-content: space-around;
-            background-color: #f8f9fa;
-            padding: 15px;
-            border-radius: 8px;
-        }
-        .score-category {
-            text-align: center;
-            padding: 10px;
-            background-color: #e9ecef;
-            border-radius: 5px;
-        }
-        .progress-container {
-            width: 100%;
-            background-color: #e9ecef;
-            border-radius: 5px;
-            margin: 20px 0;
-        }
-        .progress-bar {
-            height: 30px;
-            background-color: #4CAF50;
-            border-radius: 5px;
-            width: 0%;
-            transition: width 0.3s;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-weight: bold;
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Formulario de Evaluación de Licitación</title>
+  <style>
+    /* Reset y base */
+    * {
+      box-sizing: border-box;
+    }
+    body {
+      margin: 0;
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(to bottom right, #e0f2fe, #c7d2fe);
+      min-height: 100vh;
+      padding: 24px;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+    }
+    .contenedor {
+      background: white;
+      border-radius: 1rem;
+      max-width: 960px;
+      width: 100%;
+      box-shadow: 0 25px 50px -12px rgba(99, 102, 241, 0.25);
+      overflow: hidden;
+    }
+
+    /* Encabezado */
+    .encabezado {
+      background: linear-gradient(to right, #2563eb, #4f46e5);
+      padding: 24px 32px;
+      color: #e0e7ff;
+    }
+    .encabezado h1 {
+      font-size: 2rem;
+      font-weight: 700;
+      margin: 0 0 6px 0;
+    }
+    .encabezado p {
+      margin: 0;
+      color: #bfdbfe;
+    }
+
+    /* Sección del formulario */
+    .seccion-formulario {
+      background: #f9fafb;
+      border-bottom: 1px solid #e5e7eb;
+      padding: 24px 32px;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 24px;
+    }
+    label {
+      display: block;
+      font-weight: 600;
+      margin-bottom: 8px;
+      color: #374151;
+    }
+    input[type="text"],
+    input[type="date"],
+    textarea {
+      width: 100%;
+      padding: 10px 14px;
+      border: 1px solid #d1d5db;
+      border-radius: 0.5rem;
+      font-size: 1rem;
+      transition: box-shadow 0.2s ease;
+      font-family: inherit;
+    }
+    input[type="text"]:focus,
+    input[type="date"]:focus,
+    textarea:focus {
+      outline: none;
+      border-color: #3b82f6;
+      box-shadow: 0 0 5px 2px #3b82f6aa;
+    }
+    textarea {
+      resize: vertical;
+    }
+
+    /* Resumen de puntuación */
+    .resumen-puntaje {
+      padding: 24px 32px;
+      background: linear-gradient(to right, #ecfdf5, #e0f2fe);
+      border-bottom: 1px solid #d1d5db;
+      display: flex;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 16px;
+    }
+    .grupo-puntaje {
+      display: flex;
+      gap: 48px;
+      align-items: center;
+    }
+    .bloque-puntaje {
+      text-align: center;
+    }
+    .bloque-puntaje .puntaje {
+      font-size: 2.25rem;
+      font-weight: 700;
+      color: #2563eb;
+      margin-bottom: 4px;
+    }
+    .bloque-puntaje.cumplimiento .puntaje {
+      color: #16a34a;
+    }
+    .bloque-puntaje .etiqueta {
+      font-size: 0.875rem;
+      color: #4b5563;
+    }
+    .boton-exportar {
+      padding: 12px 28px;
+      background-color: #2563eb;
+      color: white;
+      border-radius: 0.5rem;
+      border: none;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+      white-space: nowrap;
+    }
+    .boton-exportar:hover {
+      background-color: #1d4ed8;
+    }
+
+    /* Requisitos */
+    .requisitos {
+      padding: 32px;
+    }
+    .bloque-categoria {
+      margin-bottom: 48px;
+    }
+    .encabezado-categoria {
+      display: flex;
+      align-items: center;
+      border-bottom: 2px solid #e5e7eb;
+      padding-bottom: 8px;
+      margin-bottom: 20px;
+      color: #374151;
+      font-weight: 700;
+      font-size: 1.25rem;
+      gap: 8px;
+    }
+    .item-requisito {
+      background: white;
+      border: 1px solid #e5e7eb;
+      border-radius: 0.75rem;
+      padding: 16px 20px;
+      margin-bottom: 16px;
+      box-shadow: 0 1px 3px rgb(0 0 0 / 0.1);
+      transition: box-shadow 0.3s ease;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+    }
+    .item-requisito:hover {
+      box-shadow: 0 5px 15px rgb(0 0 0 / 0.15);
+    }
+    .info-requisito {
+      flex: 1;
+    }
+    .numero-requisito {
+      background: #f3f4f6;
+      color: #374151;
+      font-weight: 600;
+      font-size: 0.875rem;
+      padding: 3px 10px;
+      border-radius: 0.5rem;
+      margin-bottom: 6px;
+      display: inline-block;
+    }
+    .descripcion-requisito {
+      color: #4b5563;
+      line-height: 1.4;
+    }
+    .grupo-botones {
+      display: flex;
+      gap: 10px;
+      margin-left: 16px;
+      flex-shrink: 0;
+    }
+    button.boton-estado {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      border-radius: 0.5rem;
+      font-weight: 600;
+      font-size: 0.875rem;
+      padding: 8px 14px;
+      cursor: pointer;
+      border: none;
+      transition: all 0.3s ease;
+      user-select: none;
+    }
+    button.boton-estado svg {
+      width: 16px;
+      height: 16px;
+    }
+    button.cumple {
+      background-color: #22c55e;
+      color: white;
+      box-shadow: 0 5px 10px rgb(34 197 94 / 0.6);
+    }
+    button.cumple:hover {
+      background-color: #16a34a;
+    }
+    button.no-cumple {
+      background-color: #ef4444;
+      color: white;
+      box-shadow: 0 5px 10px rgb(239 68 68 / 0.6);
+    }
+    button.no-cumple:hover {
+      background-color: #b91c1c;
+    }
+    button.neutro {
+      background-color: #f3f4f6;
+      color: #4b5563;
+    }
+    button.neutro:hover {
+      background-color: #d1d5db;
+      color: #1f2937;
+    }
+
+    /* Observaciones */
+    .observaciones {
+      background: #f9fafb;
+      border-top: 1px solid #e5e7eb;
+      padding: 24px 32px;
+    }
+    .observaciones label {
+      font-size: 1.125rem;
+      font-weight: 700;
+      color: #374151;
+      margin-bottom: 12px;
+      display: block;
+    }
+    .observaciones textarea {
+      width: 100%;
+      min-height: 100px;
+      font-size: 1rem;
+      padding: 12px 16px;
+      border: 1px solid #d1d5db;
+      border-radius: 0.5rem;
+      font-family: inherit;
+      resize: vertical;
+      transition: box-shadow 0.3s ease;
+    }
+    .observaciones textarea:focus {
+      outline: none;
+      border-color: #3b82f6;
+      box-shadow: 0 0 5px 2px #3b82f6aa;
+    }
+
+    /* Pie de página */
+    .pie-pagina {
+      background: #f3f4f6;
+      padding: 16px 32px;
+      text-align: center;
+      font-size: 0.875rem;
+      color: #6b7280;
+    }
+
+    /* Iconos SVG */
+    .icono {
+      width: 20px;
+      height: 20px;
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+    /* Color iconos categoria */
+    .encabezado-categoria svg {
+      color: #2563eb;
+    }
+
+    /* Responsive */
+    @media (max-width: 600px) {
+      .resumen-puntaje {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      .grupo-puntaje {
+        gap: 32px;
+        margin-bottom: 12px;
+      }
+      .boton-exportar {
+        width: 100%;
+      }
+    }
+  </style>
 </head>
 <body>
-    <div class="dashboard">
-        <!-- Sección 2.1 -->
-        <div class="section">
-            <h2>Criterios Generales de Evaluación del Proyecto</h2>
-            <div class="criteria">
-                <label>¿El proyecto cuenta con una planificación clara y documentada?</label>
-                <input type="radio" name="planificacion" value="3"> Completamente
-                <input type="radio" name="planificacion" value="2"> Parcialmente
-                <input type="radio" name="planificacion" value="1"> No existe
-            </div>
-            <div class="criteria">
-                <label>¿Se han definido los objetivos y alcance del software?</label>
-                <input type="radio" name="objetivos" value="3"> Completamente
-                <input type="radio" name="objetivos" value="2"> Parcialmente
-                <input type="radio" name="objetivos" value="1"> No existe
-            </div>
-            <div class="criteria">
-                <label>¿El equipo sigue una metodología de gestión de proyectos?</label>
-                <input type="radio" name="metodologia" value="3"> Completamente
-                <input type="radio" name="metodologia" value="2"> Parcialmente
-                <input type="radio" name="metodologia" value="1"> No existe
-            </div>
-            <div class="criteria">
-                <label>¿Existen métricas de seguimiento y control del proyecto?</label>
-                <input type="radio" name="metricas" value="3"> Completamente
-                <input type="radio" name="metricas" value="2"> Parcialmente
-                <input type="radio" name="metricas" value="1"> No existe
-            </div>
+  <main class="contenedor" role="main" aria-label="Formulario de Evaluación de Licitación">
+    <!-- Encabezado -->
+    <header class="encabezado">
+      <h1>Formulario de Evaluación de Licitación</h1>
+      <p>Evaluación de cumplimiento de requisitos técnicos</p>
+    </header>
+
+    <!-- Información Empresa y Evaluador -->
+    <section class="seccion-formulario" aria-label="Información de la empresa y evaluador">
+      <div>
+        <label for="nombreEmpresa">Nombre de la Empresa</label>
+        <input id="nombreEmpresa" type="text" placeholder="Ingrese el nombre de la empresa" />
+      </div>
+      <div>
+        <label for="nombreEvaluador">Nombre del Evaluador</label>
+        <input id="nombreEvaluador" type="text" placeholder="Ingrese su nombre" />
+      </div>
+      <div>
+        <label for="fechaEvaluacion">
+          Fecha
+          <span aria-hidden="true">📅</span>
+        </label>
+        <input id="fechaEvaluacion" type="date" />
+      </div>
+    </section>
+
+    <!-- Resumen de Puntaje -->
+    <section class="resumen-puntaje" aria-live="polite" aria-atomic="true">
+      <div class="grupo-puntaje">
+        <div class="bloque-puntaje" aria-label="Requisitos cumplidos">
+          <div class="puntaje" id="contadorPuntaje">0/22</div>
+          <div class="etiqueta">Requisitos Cumplidos</div>
         </div>
-
-        <!-- Sección 2.2 -->
-        <div class="section">
-            <h2>Criterios de Evaluación del Producto</h2>
-            <div class="criteria">
-                <label>¿El software cumple con los requisitos funcionales?</label>
-                <input type="radio" name="requisitos_funcionales" value="3"> Completamente
-                <input type="radio" name="requisitos_funcionales" value="2"> Parcialmente
-                <input type="radio" name="requisitos_funcionales" value="1"> No cumple
-            </div>
-            <div class="criteria">
-                <label>¿La interfaz de usuario es intuitiva y fácil de usar?</label>
-                <input type="radio" name="interfaz" value="3"> Muy intuitiva
-                <input type="radio" name="interfaz" value="2"> Medianamente intuitiva
-                <input type="radio" name="interfaz" value="1"> Poco intuitiva
-            </div>
-            <div class="criteria">
-                <label>¿El sistema es compatible con diferentes dispositivos?</label>
-                <input type="radio" name="compatibilidad" value="3"> Completamente
-                <input type="radio" name="compatibilidad" value="2"> Parcialmente
-                <input type="radio" name="compatibilidad" value="1"> No es compatible
-            </div>
-            <div class="criteria">
-                <label>¿El software permite escalabilidad y futuras actualizaciones?</label>
-                <input type="radio" name="escalabilidad" value="3"> Altamente escalable
-                <input type="radio" name="escalabilidad" value="2"> Medianamente escalable
-                <input type="radio" name="escalabilidad" value="1"> Poco escalable
-            </div>
+        <div class="bloque-puntaje cumplimiento" aria-label="Porcentaje de cumplimiento">
+          <div class="puntaje" id="porcentajeCumplimiento">0.0%</div>
+          <div class="etiqueta">Cumplimiento</div>
         </div>
+      </div>
+      <button class="boton-exportar" id="botonExportar" type="button" aria-label="Exportar resultados de evaluación">Exportar Resultados</button>
+    </section>
 
-        <!-- Sección 2.3 -->
-        <div class="section">
-            <h2>Evaluación Económica</h2>
-            <div class="criteria">
-                <label>¿Se realizó un análisis de costos del desarrollo y mantenimiento?</label>
-                <input type="radio" name="analisis_costos" value="3"> Completamente
-                <input type="radio" name="analisis_costos" value="2"> Parcialmente
-                <input type="radio" name="analisis_costos" value="1"> No existe
-            </div>
-            <div class="criteria">
-                <label>¿El costo del software es proporcional a los beneficios?</label>
-                <input type="radio" name="proporcion_costo_beneficio" value="3"> Completamente
-                <input type="radio" name="proporcion_costo_beneficio" value="2"> Parcialmente
-                <input type="radio" name="proporcion_costo_beneficio" value="1"> No es proporcional
-            </div>
-            <div class="criteria">
-                <label>¿Se ha identificado un modelo de negocio sostenible?</label>
-                <input type="radio" name="modelo_negocio" value="3"> Completamente
-                <input type="radio" name="modelo_negocio" value="2"> Parcialmente
-                <input type="radio" name="modelo_negocio" value="1"> No existe
-            </div>
-            <div class="criteria">
-                <label>¿Existen alternativas de financiamiento?</label>
-                <input type="radio" name="financiamiento" value="3"> Múltiples alternativas
-                <input type="radio" name="financiamiento" value="2"> Algunas alternativas
-                <input type="radio" name="financiamiento" value="1"> No hay alternativas
-            </div>
-        </div>
+    <!-- Requisitos -->
+    <section class="requisitos" aria-label="Lista de requisitos para evaluación">
+      <!-- Aquí se inyectarán los requisitos -->
+    </section>
 
-        <!-- Sección 2.4 -->
-        <div class="section">
-            <h2>Evaluación y Requisitos Técnicos</h2>
-            <div class="criteria">
-                <label>¿El software utiliza tecnologías y lenguajes adecuados?</label>
-                <input type="radio" name="tecnologias" value="3"> Completamente
-                <input type="radio" name="tecnologias" value="2"> Parcialmente
-                <input type="radio" name="tecnologias" value="1"> No adecuadas
-            </div>
-            <div class="criteria">
-                <label>¿Se han definido correctamente los requerimientos de hardware y software?</label>
-                <input type="radio" name="requerimientos" value="3"> Completamente
-                <input type="radio" name="requerimientos" value="2"> Parcialmente
-                <input type="radio" name="requerimientos" value="1"> No definidos
-            </div>
-            <div class="criteria">
-                <label>¿El sistema cumple con estándares de seguridad y cifrado?</label>
-                <input type="radio" name="seguridad" value="3"> Completamente
-                <input type="radio" name="seguridad" value="2"> Parcialmente
-                <input type="radio" name="seguridad" value="1"> No cumple
-            </div>
-            <div class="criteria">
-                <label>¿El software ha sido probado para identificar errores?</label>
-                <input type="radio" name="pruebas" value="3"> Completamente
-                <input type="radio" name="pruebas" value="2"> Parcialmente
-                <input type="radio" name="pruebas" value="1"> No probado
-            </div>
-        </div>
+    <!-- Observaciones -->
+    <section class="observaciones">
+      <label for="observaciones">Observaciones:</label>
+      <textarea id="observaciones" placeholder="Ingrese observaciones adicionales sobre la evaluación..."></textarea>
+    </section>
 
-        <!-- Sección 2.5 -->
-        <div class="section">
-            <h2>Estructura del Software</h2>
-            <div class="criteria">
-                <label>¿El código fuente está bien documentado y sigue buenas prácticas?</label>
-                <input type="radio" name="documentacion_codigo" value="3"> Completamente
-                <input type="radio" name="documentacion_codigo" value="2"> Parcialmente
-                <input type="radio" name="documentacion_codigo" value="1"> No existe
-            </div>
-            <div class="criteria">
-                <label>¿La arquitectura permite fácil mantenimiento y escalabilidad?</label>
-                <input type="radio" name="arquitectura" value="3"> Completamente
-                <input type="radio" name="arquitectura" value="2"> Parcialmente
-                <input type="radio" name="arquitectura" value="1"> No adecuada
-            </div>
-            <div class="criteria">
-                <label>¿Se han realizado pruebas unitarias, de integración y de sistema?</label>
-                <input type="radio" name="pruebas_integradas" value="3"> Completamente
-                <input type="radio" name="pruebas_integradas" value="2"> Parcialmente
-                <input type="radio" name="pruebas_integradas" value="1"> No realizadas
-            </div>
-            <div class="criteria">
-                <label>¿El software tiene documentación técnica accesible y actualizada?</label>
-                <input type="radio" name="documentacion_tecnica" value="3"> Completamente
-                <input type="radio" name="documentacion_tecnica" value="2"> Parcialmente
-                <input type="radio" name="documentacion_tecnica" value="1"> No existe
-            </div>
-        </div>
+    <!-- Pie de página -->
+    <footer class="pie-pagina">
+      <p><strong>Sistema de Puntuación:</strong> CUMPLE = 1 PUNTO | NO CUMPLE = 0 PUNTOS</p>
+    </footer>
+  </main>
 
-        <!-- Sección 2.6 -->
-        <div class="section">
-            <h2>Estructura Legal y Organizacional</h2>
-            <div class="criteria">
-                <label>¿El software cumple con normativas de protección de datos?</label>
-                <input type="radio" name="proteccion_datos" value="3"> Completamente
-                <input type="radio" name="proteccion_datos" value="2"> Parcialmente
-                <input type="radio" name="proteccion_datos" value="1"> No cumple
-            </div>
-            <div class="criteria">
-                <label>¿Se han definido derechos de propiedad intelectual y licenciamiento?</label>
-                <input type="radio" name="propiedad_intelectual" value="3"> Completamente
-                <input type="radio" name="propiedad_intelectual" value="2"> Parcialmente
-                <input type="radio" name="propiedad_intelectual" value="1"> No definidos
-            </div>
-            <div class="criteria">
-                <label>¿Existen acuerdos de confidencialidad para los involucrados?</label>
-                <input type="radio" name="confidencialidad" value="3"> Completamente
-                <input type="radio" name="confidencialidad" value="2"> Parcialmente
-                <input type="radio" name="confidencialidad" value="1"> No existen
-            </div>
-            <div class="criteria">
-                <label>¿El software se ajusta a estándares internacionales?</label>
-                <input type="radio" name="estandares_internacionales" value="3"> Completamente
-                <input type="radio" name="estandares_internacionales" value="2"> Parcialmente
-                <input type="radio" name="estandares_internacionales" value="1"> No se ajusta
-            </div>
-        </div>
+  <script>
+    (() => {
+      // Lista de requisitos iniciales
+      const requisitos = [
+        { id: 1, categoria: 'DOCUMENTACIÓN DE PRESENTACIÓN', descripcion: 'Entrega puntual conforme a las especificaciones establecidas, incluyendo el cumplimiento de sobre totalmente sellado.', estado: null },
+        { id: 2, categoria: 'DOCUMENTACIÓN DE PRESENTACIÓN', descripcion: 'Carta de presentación de la propuesta', estado: null },
+        { id: 3, categoria: 'DOCUMENTACIÓN DE PRESENTACIÓN', descripcion: 'Todos los documentos deberán incorporar una marca de agua visible con la leyenda "Uso Educativo"', estado: null },
+        { id: 4, categoria: 'DOCUMENTACIÓN INSTITUCIONAL Y LEGAL', descripcion: 'Todos los documentos realizados por la empresa deberán tener su logo.', estado: null },
+        { id: 5, categoria: 'DOCUMENTACIÓN INSTITUCIONAL Y LEGAL', descripcion: 'Copia de la cédula de ciudadanía de cada uno de los socios de la empresa.', estado: null },
+        { id: 6, categoria: 'DOCUMENTACIÓN INSTITUCIONAL Y LEGAL', descripcion: 'Certificado de Existencia y Representación legal (cámara de comercio)', estado: null },
+        { id: 7, categoria: 'DOCUMENTACIÓN INSTITUCIONAL Y LEGAL', descripcion: 'Acta de junta de socios o accionistas (autorización para contratar)', estado: null },
+        { id: 8, categoria: 'DOCUMENTACIÓN INSTITUCIONAL Y LEGAL', descripcion: 'Certificados de Antecedentes Disciplinarios, Fiscales y Penales.', estado: null },
+        { id: 9, categoria: 'DOCUMENTACIÓN INSTITUCIONAL Y LEGAL', descripcion: 'Póliza de seguro vigente.', estado: null },
+        { id: 10, categoria: 'CAPACIDAD TÉCNICA Y DE TALENTO HUMANO', descripcion: 'Capacidad operacional Hojas de Vida y Soporte de los profesionales clave', estado: null },
+        { id: 11, categoria: 'REQUISITOS FINANCIEROS Y ECONÓMICOS', descripcion: 'Requisitos financieros, Balance general, índice de liquidez.', estado: null },
+        { id: 12, categoria: 'SEGURIDAD Y LEGALIDAD DEL SOFTWARE', descripcion: 'Propuesta económica formato anexo al pliego de condiciones.', estado: null },
+        { id: 13, categoria: 'SEGURIDAD Y LEGALIDAD DEL SOFTWARE', descripcion: 'Análisis de riesgos y propuesta de mitigación.', estado: null },
+        { id: 14, categoria: 'SEGURIDAD Y LEGALIDAD DEL SOFTWARE', descripcion: 'Documentación técnica de la seguridad.', estado: null },
+        { id: 15, categoria: 'SEGURIDAD Y LEGALIDAD DEL SOFTWARE', descripcion: 'Propuesta de escalabilidad y mantenimiento a largo plazo.', estado: null },
+        { id: 16, categoria: 'SEGURIDAD Y LEGALIDAD DEL SOFTWARE', descripcion: 'Certificado de modelo de licenciamiento del software.', estado: null },
+        { id: 17, categoria: 'SEGURIDAD Y LEGALIDAD DEL SOFTWARE', descripcion: 'Carta de confidencialidad.', estado: null },
+        { id: 18, categoria: 'PROPUESTA ECONÓMICA DETALLADA', descripcion: 'Formato de cotización componentes y servicios.', estado: null },
+        { id: 19, categoria: 'PROPUESTA ECONÓMICA DETALLADA', descripcion: 'Análisis del valor total de la propuesta económica.', estado: null },
+        { id: 20, categoria: 'PLANIFICACIÓN ESTRATÉGICA Y DE CAPACITACIÓN', descripcion: 'Plan claro de capacitación a los funcionarios de la entidad adquiriente del software.', estado: null },
+        { id: 21, categoria: 'PLANIFICACIÓN ESTRATÉGICA Y DE CAPACITACIÓN', descripcion: 'Análisis de Innovación (Incluye mejoras tecnológicas).', estado: null },
+        { id: 22, categoria: 'PLANIFICACIÓN ESTRATÉGICA Y DE CAPACITACIÓN', descripcion: 'Calidad y detalle de la documentación entregada y soporte ofrecido.', estado: null }
+      ];
 
-        <!-- Sección 2.7 -->
-        <div class="section">
-            <h2>Evaluación Estratégica</h2>
-            <div class="criteria">
-                <label>¿El software se alinea con los objetivos estratégicos?</label>
-                <input type="radio" name="alineacion_estrategica" value="3"> Completamente
-                <input type="radio" name="alineacion_estrategica" value="2"> Parcialmente
-                <input type="radio" name="alineacion_estrategica" value="1"> No se alinea
-            </div>
-            <div class="criteria">
-                <label>¿Ofrece características innovadoras o diferenciadoras?</label>
-                <input type="radio" name="innovacion" value="3"> Muy innovador
-                <input type="radio" name="innovacion" value="2"> Medianamente innovador
-                <input type="radio" name="innovacion" value="1"> Poco innovador
-            </div>
-            <div class="criteria">
-                <label>¿Cuenta con estrategias para su comercialización?</label>
-                <input type="radio" name="comercializacion" value="3"> Completamente
-                <input type="radio" name="comercializacion" value="2"> Parcialmente
-                <input type="radio" name="comercializacion" value="1"> No existen
-            </div>
-            <div class="criteria">
-                <label>¿El sistema es adaptable a futuras tendencias tecnológicas?</label>
-                <input type="radio" name="adaptabilidad" value="3"> Altamente adaptable
-                <input type="radio" name="adaptabilidad" value="2"> Medianamente adaptable
-                <input type="radio" name="adaptabilidad" value="1"> Poco adaptable
-            </div>
-        </div>
+      // Estado interno
+      const estado = {
+        datosEvaluacion: {
+          nombreEmpresa: '',
+          nombreEvaluador: '',
+          fecha: new Date().toISOString().split('T')[0],
+          observaciones: ''
+        },
+        requisitos: JSON.parse(JSON.stringify(requisitos)) // copia profunda para no modificar original
+      };
 
-        <!-- Sección 2.8 -->
-        <div class="section">
-            <h2>Evaluación de Impacto Social y Ambiental</h2>
-            <div class="criteria">
-                <label>¿El software fomenta la inclusión digital y accesibilidad?</label>
-                <input type="radio" name="inclusion" value="3"> Completamente
-                <input type="radio" name="inclusion" value="2"> Parcialmente
-                <input type="radio" name="inclusion" value="1"> No fomenta
-            </div>
-            <div class="criteria">
-                <label>¿Se ha evaluado el consumo energético y eficiencia?</label>
-                <input type="radio" name="consumo_energetico" value="3"> Completamente
-                <input type="radio" name="consumo_energetico" value="2"> Parcialmente
-                <input type="radio" name="consumo_energetico" value="1"> No evaluado
-            </div>
-            <div class="criteria">
-                <label>¿El software tiene impacto positivo en la comunidad?</label>
-                <input type="radio" name="impacto_social" value="3"> Alto impacto
-                <input type="radio" name="impacto_social" value="2"> Impacto moderado
-                <input type="radio" name="impacto_social" value="1"> Bajo impacto
-            </div>
-            <div class="criteria">
-                <label>¿Se han tomado medidas para mitigar impacto ambiental?</label>
-                <input type="radio" name="impacto_ambiental" value="3"> Múltiples medidas
-                <input type="radio" name="impacto_ambiental" value="2"> Algunas medidas
-                <input type="radio" name="impacto_ambiental" value="1"> No hay medidas
-            </div>
-        </div>
-    </div>
+      // Selectores DOM
+      const inputNombreEmpresa = document.getElementById('nombreEmpresa');
+      const inputNombreEvaluador = document.getElementById('nombreEvaluador');
+      const inputFecha = document.getElementById('fechaEvaluacion');
+      const textareaObservaciones = document.getElementById('observaciones');
+      const seccionRequisitos = document.querySelector('.requisitos');
+      const contadorPuntaje = document.getElementById('contadorPuntaje');
+      const porcentajeCumplimiento = document.getElementById('porcentajeCumplimiento');
+      const botonExportar = document.getElementById('botonExportar');
 
-    <div id="result-section" class="section">
-        <h2>Resultados de Evaluación</h2>
-        <div id="total-score">Puntaje Total: 0/100</div>
-        
-        <div class="progress-container">
-            <div id="progress-bar" class="progress-bar">0%</div>
-        </div>
-        
-        <div class="score-details">
-            <div class="score-category">
-                <h3>Proyecto</h3>
-                <div id="project-score">0/12</div>
-            </div>
-            <div class="score-category">
-                <h3>Producto</h3>
-                <div id="product-score">0/12</div>
-            </div>
-            <div class="score-category">
-                <h3>Económico</h3>
-                <div id="economic-score">0/12</div>
-            </div>
-            <div class="score-category">
-                <h3>Técnico</h3>
-                <div id="tech-score">0/12</div>
-            </div>
-            <div class="score-category">
-                <h3>Estructura</h3>
-                <div id="structure-score">0/12</div>
-            </div>
-            <div class="score-category">
-                <h3>Legal</h3>
-                <div id="legal-score">0/12</div>
-            </div>
-            <div class="score-category">
-                <h3>Estratégico</h3>
-                <div id="strategy-score">0/12</div>
-            </div>
-            <div class="score-category">
-                <h3>Impacto</h3>
-                <div id="impact-score">0/12</div>
-            </div>
-        </div>
+      // Iconos SVG simples para categorías
+      const iconos = {
+        'DOCUMENTACIÓN': `<svg class="icono" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>`,
+        'INSTITUCIONAL': `<svg class="icono" viewBox="0 0 24 24"><path d="M3 21v-8l9-4 9 4v8"/></svg>`,
+        'TALENTO HUMANO': `<svg class="icono" viewBox="0 0 24 24"><circle cx="12" cy="7" r="4"/><path d="M5.5 21a7 7 0 0 1 13 0"/></svg>`,
+        'FINANCIERO': `<svg class="icono" viewBox="0 0 24 24"><path d="M12 1v22"/><path d="M17 5H9a4 4 0 0 0 0 8h6a4 4 0 0 1 0 8H7"/></svg>`,
+        'SEGURIDAD': `<svg class="icono" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>`,
+        'ECONÓMICA': `<svg class="icono" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M8 12h8M12 8v8"/></svg>`,
+        'PLANIFICACIÓN': `<svg class="icono" viewBox="0 0 24 24"><polyline points="4 17 10 11 13 14 20 7"/><circle cx="20" cy="7" r="2"/></svg>`
+      };
 
-        <div class="graph-section">
-            <div class="chart-container">
-                <canvas id="radialChart"></canvas>
-            </div>
-            <div class="chart-container">
-                <canvas id="barChart"></canvas>
-            </div>
-        </div>
-    </div>
+      // Obtener icono según categoría
+      function obtenerIcono(categoria) {
+        if (categoria.includes('DOCUMENTACIÓN')) return iconos['DOCUMENTACIÓN'];
+        if (categoria.includes('INSTITUCIONAL')) return iconos['INSTITUCIONAL'];
+        if (categoria.includes('TALENTO HUMANO')) return iconos['TALENTO HUMANO'];
+        if (categoria.includes('FINANCIERO')) return iconos['FINANCIERO'];
+        if (categoria.includes('SEGURIDAD')) return iconos['SEGURIDAD'];
+        if (categoria.includes('ECONÓMICA')) return iconos['ECONÓMICA'];
+        if (categoria.includes('PLANIFICACIÓN')) return iconos['PLANIFICACIÓN'];
+        return iconos['DOCUMENTACIÓN'];
+      }
 
-    <script>
-        const SECTION_WEIGHTS = {
-            'proyecto': { criteria: ['planificacion', 'objetivos', 'metodologia', 'metricas'], maxScore: 12 },
-            'producto': { criteria: ['requisitos_funcionales', 'interfaz', 'compatibilidad', 'escalabilidad'], maxScore: 12 },
-            'economico': { criteria: ['analisis_costos', 'proporcion_costo_beneficio', 'modelo_negocio', 'financiamiento'], maxScore: 12 },
-            'tecnico': { criteria: ['tecnologias', 'requerimientos', 'seguridad', 'pruebas'], maxScore: 12 },
-            'estructura': { criteria: ['documentacion_codigo', 'arquitectura', 'pruebas_integradas', 'documentacion_tecnica'], maxScore: 12 },
-            'legal': { criteria: ['proteccion_datos', 'propiedad_intelectual', 'confidencialidad', 'estandares_internacionales'], maxScore: 12 },
-            'estrategico': { criteria: ['alineacion_estrategica', 'innovacion', 'comercializacion', 'adaptabilidad'], maxScore: 12 },
-            'impacto': { criteria: ['inclusion', 'consumo_energetico', 'impacto_social', 'impacto_ambiental'], maxScore: 12 }
-        };
+      // Agrupar requisitos por categoría
+      function agruparRequisitos(lista) {
+        return lista.reduce((acum, req) => {
+          if (!acum[req.categoria]) acum[req.categoria] = [];
+          acum[req.categoria].push(req);
+          return acum;
+        }, {});
+      }
 
-        function calculateSectionScore(sectionName) {
-            const section = SECTION_WEIGHTS[sectionName];
-            const sectionValues = section.criteria.map(name => {
-                const selectedRadio = document.querySelector(`input[name="${name}"]:checked`);
-                return selectedRadio ? parseInt(selectedRadio.value) : 0;
-            });
+      // Renderizar requisitos en el DOM
+      function renderizarRequisitos() {
+        const agrupados = agruparRequisitos(estado.requisitos);
+        seccionRequisitos.innerHTML = '';
+        Object.entries(agrupados).forEach(([categoria, reqs]) => {
+          const bloqueCategoria = document.createElement('div');
+          bloqueCategoria.className = 'bloque-categoria';
 
-            const averageScore = sectionValues.reduce((a, b) => a + b, 0) / sectionValues.length;
-            const weightedScore = (averageScore / 3) * section.maxScore;
-            return Math.round(weightedScore);
-        }
+          const encabezadoCategoria = document.createElement('div');
+          encabezadoCategoria.className = 'encabezado-categoria';
+          encabezadoCategoria.innerHTML = `${obtenerIcono(categoria)}<span>${categoria}</span>`;
+          bloqueCategoria.appendChild(encabezadoCategoria);
 
-        function updateScores() {
-            const scores = {
-                'proyecto': calculateSectionScore('proyecto'),
-                'producto': calculateSectionScore('producto'),
-                'economico': calculateSectionScore('economico'),
-                'tecnico': calculateSectionScore('tecnico'),
-                'estructura': calculateSectionScore('estructura'),
-                'legal': calculateSectionScore('legal'),
-                'estrategico': calculateSectionScore('estrategico'),
-                'impacto': calculateSectionScore('impacto')
-            };
+          reqs.forEach(req => {
+            const item = document.createElement('div');
+            item.className = 'item-requisito';
 
-            document.getElementById('project-score').textContent = `${scores['proyecto']}/12`;
-            document.getElementById('product-score').textContent = `${scores['producto']}/12`;
-            document.getElementById('economic-score').textContent = `${scores['economico']}/12`;
-            document.getElementById('tech-score').textContent = `${scores['tecnico']}/12`;
-            document.getElementById('structure-score').textContent = `${scores['estructura']}/12`;
-            document.getElementById('legal-score').textContent = `${scores['legal']}/12`;
-            document.getElementById('strategy-score').textContent = `${scores['estrategico']}/12`;
-            document.getElementById('impact-score').textContent = `${scores['impacto']}/12`;
+            const info = document.createElement('div');
+            info.className = 'info-requisito';
 
-            const totalScore = Math.min(Object.values(scores).reduce((a, b) => a + b, 0), 100);
-            document.getElementById('total-score').textContent = `Puntaje Total: ${totalScore}/100`;
-            
-            // Calcular porcentaje de avance
-            const totalQuestions = 32; // 8 secciones * 4 preguntas cada una
-            const answeredQuestions = document.querySelectorAll('input[type="radio"]:checked').length;
-            const progressPercentage = Math.round((answeredQuestions / totalQuestions) * 100);
-            
-            const progressBar = document.getElementById('progress-bar');
-            progressBar.style.width = `${progressPercentage}%`;
-            progressBar.textContent = `${progressPercentage}%`;
-            
-            // Cambiar color según el porcentaje
-            if (progressPercentage < 30) {
-                progressBar.style.backgroundColor = '#f44336';
-            } else if (progressPercentage < 70) {
-                progressBar.style.backgroundColor = '#ff9800';
-            } else {
-                progressBar.style.backgroundColor = '#4CAF50';
-            }
+            const numero = document.createElement('span');
+            numero.className = 'numero-requisito';
+            numero.textContent = `N° ${req.id}`;
+            info.appendChild(numero);
 
-            updateCharts(scores);
-        }
+            const descripcion = document.createElement('p');
+            descripcion.className = 'descripcion-requisito';
+            descripcion.textContent = req.descripcion;
+            info.appendChild(descripcion);
 
-        function updateCharts(scores) {
-            const sectionNames = Object.keys(scores);
-            const sectionScores = sectionNames.map(name => scores[name] / SECTION_WEIGHTS[name].maxScore * 3);
+            item.appendChild(info);
 
-            radialChart.data.datasets[0].data = sectionScores;
-            barChart.data.datasets[0].data = sectionScores;
-            
-            radialChart.update();
-            barChart.update();
-        }
+            const grupoBotones = document.createElement('div');
+            grupoBotones.className = 'grupo-botones';
 
-        function createCharts() {
-            const radialCtx = document.getElementById('radialChart').getContext('2d');
-            const barCtx = document.getElementById('barChart').getContext('2d');
+            // Botón CUMPLE
+            const botonCumple = document.createElement('button');
+            botonCumple.type = 'button';
+            botonCumple.className = 'boton-estado';
+            botonCumple.setAttribute('aria-pressed', req.estado === true ? 'true' : 'false');
+            botonCumple.innerHTML = `<svg class="icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> CUMPLE`;
+            botonCumple.classList.toggle('cumple', req.estado === true);
+            botonCumple.classList.toggle('neutro', req.estado !== true);
+            botonCumple.addEventListener('click', () => actualizarEstadoRequisito(req.id, true));
+            grupoBotones.appendChild(botonCumple);
 
-            const radialChart = new Chart(radialCtx, {
-                type: 'radar',
-                data: {
-                    labels: ['Proyecto', 'Producto', 'Económico', 'Técnico', 'Estructura', 'Legal', 'Estratégico', 'Impacto'],
-                    datasets: [{
-                        label: 'Evaluación',
-                        data: [0, 0, 0, 0, 0, 0, 0, 0],
-                        backgroundColor: 'rgba(75, 192, 192, 0.2)',
-                        borderColor: 'rgba(75, 192, 192, 1)',
-                        pointBackgroundColor: 'rgba(75, 192, 192, 1)'
-                    }]
-                },
-                options: { 
-                    scale: { 
-                        ticks: { 
-                            beginAtZero: true, 
-                            max: 3,
-                            stepSize: 1
-                        } 
-                    },
-                    elements: {
-                        line: {
-                            tension: 0.1
-                        }
-                    }
-                }
-            });
+            // Botón NO CUMPLE
+            const botonNoCumple = document.createElement('button');
+            botonNoCumple.type = 'button';
+            botonNoCumple.className = 'boton-estado';
+            botonNoCumple.setAttribute('aria-pressed', req.estado === false ? 'true' : 'false');
+            botonNoCumple.innerHTML = `<svg class="icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg> NO CUMPLE`;
+            botonNoCumple.classList.toggle('no-cumple', req.estado === false);
+            botonNoCumple.classList.toggle('neutro', req.estado !== false);
+            botonNoCumple.addEventListener('click', () => actualizarEstadoRequisito(req.id, false));
+            grupoBotones.appendChild(botonNoCumple);
 
-            const barChart = new Chart(barCtx, {
-                type: 'bar',
-                data: {
-                    labels: ['Proyecto', 'Producto', 'Económico', 'Técnico', 'Estructura', 'Legal', 'Estratégico', 'Impacto'],
-                    datasets: [{
-                        label: 'Puntaje',
-                        data: [0, 0, 0, 0, 0, 0, 0, 0],
-                        backgroundColor: [
-                            'rgba(54, 162, 235, 0.6)',
-                            'rgba(255, 99, 132, 0.6)',
-                            'rgba(75, 192, 192, 0.6)',
-                            'rgba(153, 102, 255, 0.6)',
-                            'rgba(255, 159, 64, 0.6)',
-                            'rgba(199, 199, 199, 0.6)',
-                            'rgba(83, 102, 255, 0.6)',
-                            'rgba(40, 159, 64, 0.6)'
-                        ],
-                        borderColor: [
-                            'rgba(54, 162, 235, 1)',
-                            'rgba(255, 99, 132, 1)',
-                            'rgba(75, 192, 192, 1)',
-                            'rgba(153, 102, 255, 1)',
-                            'rgba(255, 159, 64, 1)',
-                            'rgba(199, 199, 199, 1)',
-                            'rgba(83, 102, 255, 1)',
-                            'rgba(40, 159, 64, 1)'
-                        ],
-                        borderWidth: 1
-                    }]
-                },
-                options: { 
-                    scales: { 
-                        y: { 
-                            beginAtZero: true, 
-                            max: 3,
-                            ticks: {
-                                stepSize: 1
-                            }
-                        } 
-                    },
-                    plugins: {
-                        legend: {
-                            display: false
-                        }
-                    }
-                }
-            });
+            item.appendChild(grupoBotones);
+            bloqueCategoria.appendChild(item);
+          });
 
-            return { radialChart, barChart };
-        }
-
-        const { radialChart, barChart } = createCharts();
-
-        // Añadir evento de cambio a todos los radios
-        document.querySelectorAll('input[type="radio"]').forEach(radio => {
-            radio.addEventListener('change', updateScores);
+          seccionRequisitos.appendChild(bloqueCategoria);
         });
-        
-        // Inicializar la barra de progreso
-        updateScores();
-    </script>
+      }
+
+      // Actualizar estado de requisito
+      function actualizarEstadoRequisito(id, estadoNuevo) {
+        const requisito = estado.requisitos.find(r => r.id === id);
+        if (requisito) {
+          requisito.estado = estadoNuevo;
+          renderizarRequisitos();
+          actualizarPuntajes();
+        }
+      }
+
+      // Actualizar puntajes y porcentajes
+      function actualizarPuntajes() {
+        const cumplidos = estado.requisitos.filter(r => r.estado === true).length;
+        const total = estado.requisitos.length;
+        const porcentaje = total === 0 ? 0 : ((cumplidos / total) * 100).toFixed(1);
+        contadorPuntaje.textContent = `${cumplidos}/${total}`;
+        porcentajeCumplimiento.textContent = `${porcentaje}%`;
+      }
+
+      // Actualizar datos de evaluación desde inputs
+      function actualizarDatosEvaluacion(campo, valor) {
+        estado.datosEvaluacion[campo] = valor;
+      }
+
+      // Exportar resultados a JSON y descargar
+      function exportarResultados() {
+        const resultados = {
+          informacionEvaluacion: estado.datosEvaluacion,
+          puntaje: `${estado.requisitos.filter(r => r.estado === true).length}/${estado.requisitos.length}`,
+          porcentajeCumplimiento: ((estado.requisitos.filter(r => r.estado === true).length / estado.requisitos.length) * 100).toFixed(1) + '%',
+          requisitos: estado.requisitos.map(r => ({
+            id: r.id,
+            descripcion: r.descripcion,
+            estado: r.estado === true ? 'CUMPLE' : r.estado === false ? 'NO CUMPLE' : 'NO EVALUADO'
+          }))
+        };
+        const datosStr = JSON.stringify(resultados, null, 2);
+        const blob = new Blob([datosStr], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        const fechaSegura = (estado.datosEvaluacion.fecha || new Date().toISOString().split('T')[0]).replace(/:/g, '-');
+        const empresaSegura = (estado.datosEvaluacion.nombreEmpresa || 'empresa').replace(/\s+/g, '_');
+        a.href = url;
+        a.download = `evaluacion_licitacion_${empresaSegura}_${fechaSegura}.json`;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        URL.revokeObjectURL(url);
+      }
+
+      // Inicializar inputs con valores
+      function inicializarInputs() {
+        inputNombreEmpresa.value = estado.datosEvaluacion.nombreEmpresa;
+        inputNombreEvaluador.value = estado.datosEvaluacion.nombreEvaluador;
+        inputFecha.value = estado.datosEvaluacion.fecha;
+        textareaObservaciones.value = estado.datosEvaluacion.observaciones;
+      }
+
+      // Escuchar eventos de inputs
+      inputNombreEmpresa.addEventListener('input', e => actualizarDatosEvaluacion('nombreEmpresa', e.target.value));
+      inputNombreEvaluador.addEventListener('input', e => actualizarDatosEvaluacion('nombreEvaluador', e.target.value));
+      inputFecha.addEventListener('input', e => actualizarDatosEvaluacion('fecha', e.target.value));
+      textareaObservaciones.addEventListener('input', e => actualizarDatosEvaluacion('observaciones', e.target.value));
+      botonExportar.addEventListener('click', exportarResultados);
+
+      // Inicializar todo
+      function iniciar() {
+        inicializarInputs();
+        renderizarRequisitos();
+        actualizarPuntajes();
+      }
+
+      iniciar();
+    })();
+  </script>
 </body>
 </html>
+
