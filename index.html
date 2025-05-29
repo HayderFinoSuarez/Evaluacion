@@ -479,6 +479,24 @@
       max-width: 100%;
       height: 250px;
     }
+
+    /* Contenedor observaciones dashboard */
+    #contenedorObservaciones {
+      margin-top: 20px;
+    }
+    #contenedorObservaciones h3 {
+      margin-bottom: 8px;
+      color: #2563eb;
+    }
+    #textoObservaciones {
+      white-space: pre-wrap;
+      background: #f9fafb;
+      padding: 12px;
+      border-radius: 0.5rem;
+      border: 1px solid #d1d5db;
+      min-height: 80px;
+      color: #374151;
+    }
   </style>
 </head>
 <body>
@@ -589,6 +607,12 @@
             </thead>
             <tbody id="tablaResultados"></tbody>
           </table>
+
+          <!-- NUEVO: Observaciones -->
+          <div id="contenedorObservaciones" >
+            <h3>Observaciones</h3>
+            <p id="textoObservaciones">No hay observaciones.</p>
+          </div>
         </div>
 
         <section id="ordenLicitaciones" aria-label="Listado de licitaciones ordenadas por puntaje" style="display:none;">
@@ -904,6 +928,16 @@
         });
 
         resumenDashboard.style.display = 'block';
+
+        // Mostrar observaciones
+        const contenedorObs = document.getElementById('textoObservaciones');
+        if (licitacion.informacionEvaluacion && licitacion.informacionEvaluacion.observaciones) {
+          contenedorObs.textContent = licitacion.informacionEvaluacion.observaciones.trim() || 'No hay observaciones.';
+        } else if (licitacion.observaciones) {
+          contenedorObs.textContent = licitacion.observaciones.trim() || 'No hay observaciones.';
+        } else {
+          contenedorObs.textContent = 'No hay observaciones.';
+        }
       }
 
       // Actualiza tabla ordenada y gráfica
@@ -1024,7 +1058,9 @@
                 requisitos: datos.requisitos,
                 cumplidos,
                 total,
-                porcentajeCumplimiento
+                porcentajeCumplimiento,
+                informacionEvaluacion: datos.informacionEvaluacion || {},
+                observaciones: datos.observaciones || (datos.informacionEvaluacion ? datos.informacionEvaluacion.observaciones : '')
               });
 
               archivosProcesados++;
@@ -1058,5 +1094,4 @@
   </script>
 </body>
 </html>
-
-                                    
+                       
