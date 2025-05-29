@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Evaluación de Licitación con Dashboard Múltiple</title>
+  <title>Evaluación de Licitación con Dashboard Mejorado</title>
   <style>
     /* Reset y base */
     * {
@@ -447,6 +447,38 @@
       font-size: 1rem;
     }
 
+    /* Nueva sección orden licitaciones */
+    #ordenLicitaciones {
+      background: #fefefe;
+      border-radius: 1rem;
+      padding: 20px 24px;
+      margin-top: 32px;
+      box-shadow: 0 1px 8px rgb(0 0 0 / 0.12);
+    }
+    #ordenLicitaciones h3 {
+      margin-top: 0;
+      color: #2563eb;
+      margin-bottom: 16px;
+    }
+    #tablaOrdenLicitaciones {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 24px;
+    }
+    #tablaOrdenLicitaciones th, #tablaOrdenLicitaciones td {
+      padding: 10px 14px;
+      border: 1px solid #e5e7eb;
+      text-align: left;
+    }
+    #tablaOrdenLicitaciones th {
+      background-color: #2563eb;
+      color: white;
+      font-weight: 600;
+    }
+    #graficoCumplimiento {
+      max-width: 100%;
+      height: 250px;
+    }
   </style>
 </head>
 <body>
@@ -523,7 +555,6 @@
         <input type="file" id="inputArchivo" accept=".json" aria-label="Importar archivos JSON de evaluación" multiple />
         <div id="mensajeArchivo" role="alert" style="color:#ef4444; margin-top:8px;"></div>
 
-        <!-- Selector para múltiples licitaciones -->
         <select id="selectorLicitaciones" aria-label="Seleccionar licitación para ver detalles" style="display:none;">
           <option value="" disabled selected>Seleccione una licitación</option>
         </select>
@@ -556,18 +587,34 @@
                 <th>Estado</th>
               </tr>
             </thead>
-            <tbody id="tablaResultados">
-              <!-- Fila datos aquí -->
-            </tbody>
+            <tbody id="tablaResultados"></tbody>
           </table>
         </div>
+
+        <section id="ordenLicitaciones" aria-label="Listado de licitaciones ordenadas por puntaje" style="display:none;">
+          <h3>Licitaciones ordenadas por puntaje</h3>
+          <table id="tablaOrdenLicitaciones" aria-live="polite" aria-atomic="true">
+            <thead>
+              <tr>
+                <th>Nombre / Fecha</th>
+                <th>Puntaje (cumplidos/total)</th>
+                <th>% Cumplimiento</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+          <canvas id="graficoCumplimiento" role="img" aria-label="Gráfico de barras porcentaje de cumplimiento"></canvas>
+        </section>
       </div>
     </section>
   </main>
 
+  <!-- Carga Chart.js para gráfica -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
   <script>
     (() => {
-      // Variables para menú
+      // Menú para cambiar secciones
       const btnEvaluacion = document.getElementById('tabEvaluacion');
       const btnDashboard = document.getElementById('tabDashboard');
       const seccionEvaluacion = document.getElementById('seccionEvaluacion');
@@ -592,11 +639,10 @@
           seccionDashboard.focus();
         }
       }
-
       btnEvaluacion.addEventListener('click', () => cambiarSeccion('evaluacion'));
       btnDashboard.addEventListener('click', () => cambiarSeccion('dashboard'));
 
-      // --- Código para evaluación ---
+      // Datos y estado evaluación
       const requisitos = [
         { id: 1, categoria: 'DOCUMENTACIÓN DE PRESENTACIÓN', descripcion: 'Entrega puntual conforme a las especificaciones establecidas, incluyendo el cumplimiento de sobre totalmente sellado.', estado: null },
         { id: 2, categoria: 'DOCUMENTACIÓN DE PRESENTACIÓN', descripcion: 'Carta de presentación de la propuesta', estado: null },
@@ -632,6 +678,7 @@
         requisitos: JSON.parse(JSON.stringify(requisitos))
       };
 
+      // Referencias DOM evaluación
       const inputNombreEmpresa = document.getElementById('nombreEmpresa');
       const inputNombreEvaluador = document.getElementById('nombreEvaluador');
       const inputFecha = document.getElementById('fechaEvaluacion');
@@ -641,6 +688,7 @@
       const porcentajeCumplimiento = document.getElementById('porcentajeCumplimiento');
       const botonExportar = document.getElementById('botonExportar');
 
+      // Iconos para categorías
       const iconos = {
         'DOCUMENTACIÓN': `<svg class="icono" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>`,
         'INSTITUCIONAL': `<svg class="icono" viewBox="0 0 24 24"><path d="M3 21v-8l9-4 9 4v8"/></svg>`,
@@ -651,6 +699,7 @@
         'PLANIFICACIÓN': `<svg class="icono" viewBox="0 0 24 24"><polyline points="4 17 10 11 13 14 20 7"/><circle cx="20" cy="7" r="2"/></svg>`
       };
 
+      // Funciones para evaluación
       function obtenerIcono(categoria) {
         if (categoria.includes('DOCUMENTACIÓN')) return iconos['DOCUMENTACIÓN'];
         if (categoria.includes('INSTITUCIONAL')) return iconos['INSTITUCIONAL'];
@@ -753,11 +802,13 @@
         estado.datosEvaluacion[campo] = valor;
       }
 
+      // Exportar resultados incluyendo observaciones
       function exportarResultados() {
         const resultados = {
           informacionEvaluacion: estado.datosEvaluacion,
           puntaje: `${estado.requisitos.filter(r => r.estado === true).length}/${estado.requisitos.length}`,
           porcentajeCumplimiento: ((estado.requisitos.filter(r => r.estado === true).length / estado.requisitos.length) * 100).toFixed(1) + '%',
+          observaciones: estado.datosEvaluacion.observaciones,
           requisitos: estado.requisitos.map(r => ({
             id: r.id,
             descripcion: r.descripcion,
@@ -791,16 +842,11 @@
       textareaObservaciones.addEventListener('input', e => actualizarDatosEvaluacion('observaciones', e.target.value));
       botonExportar.addEventListener('click', exportarResultados);
 
-      iniciar();
+      inicializarInputs();
+      renderizarRequisitos();
+      actualizarPuntajes();
 
-      function iniciar() {
-        inicializarInputs();
-        renderizarRequisitos();
-        actualizarPuntajes();
-      }
-
-      // --- Dashboard con múltiples licitaciones ---
-
+      // Dashboard variables y referencias
       const inputArchivo = document.getElementById('inputArchivo');
       const mensajeArchivo = document.getElementById('mensajeArchivo');
       const resumenDashboard = document.getElementById('resumenDashboard');
@@ -810,16 +856,17 @@
       const porcentajeDashboard = document.getElementById('porcentajeDashboard');
       const tablaResultados = document.getElementById('tablaResultados');
       const selectorLicitaciones = document.getElementById('selectorLicitaciones');
+      const ordenLicitacionesSection = document.getElementById('ordenLicitaciones');
+      const tablaOrdenLicitacionesBody = document.querySelector('#tablaOrdenLicitaciones tbody');
+      const graficoCumplimientoCanvas = document.getElementById('graficoCumplimiento');
 
-      // Almacenaremos aquí las licitaciones cargadas
-      const licitacionesCargadas = [];
+      let licitacionesCargadas = [];
+      let chart = null;
 
-      // Función para mostrar resumen y tabla de una licitación dada
       function mostrarLicitacion(index) {
         if (index < 0 || index >= licitacionesCargadas.length) return;
         const licitacion = licitacionesCargadas[index];
 
-        // Estadísticas
         let cumpleCount = 0;
         let noCumpleCount = 0;
         let noEvaluadoCount = 0;
@@ -836,7 +883,6 @@
         numNoEvaluado.textContent = noEvaluadoCount;
         porcentajeDashboard.textContent = porcentaje + '%';
 
-        // Tabla
         tablaResultados.innerHTML = '';
         licitacion.requisitos.forEach(r => {
           const tr = document.createElement('tr');
@@ -860,12 +906,80 @@
         resumenDashboard.style.display = 'block';
       }
 
+      // Actualiza tabla ordenada y gráfica
+      function actualizarOrdenYGrafica() {
+        // Ordenar por porcentaje de cumplimiento descendente
+        licitacionesCargadas.sort((a, b) => b.porcentajeCumplimiento - a.porcentajeCumplimiento);
+
+        // Tabla ordenada
+        tablaOrdenLicitacionesBody.innerHTML = '';
+        licitacionesCargadas.forEach(lic => {
+          const tr = document.createElement('tr');
+          const tdNombre = document.createElement('td');
+          tdNombre.textContent = lic.titulo;
+          const tdPuntaje = document.createElement('td');
+          tdPuntaje.textContent = `${lic.cumplidos}/${lic.total}`;
+          const tdPorcentaje = document.createElement('td');
+          tdPorcentaje.textContent = lic.porcentajeCumplimiento.toFixed(1) + '%';
+
+          tr.appendChild(tdNombre);
+          tr.appendChild(tdPuntaje);
+          tr.appendChild(tdPorcentaje);
+          tablaOrdenLicitacionesBody.appendChild(tr);
+        });
+
+        ordenLicitacionesSection.style.display = licitacionesCargadas.length ? 'block' : 'none';
+
+        // Gráfica con Chart.js
+        const etiquetas = licitacionesCargadas.map(l => l.titulo);
+        const datos = licitacionesCargadas.map(l => l.porcentajeCumplimiento);
+
+        if (chart) {
+          chart.data.labels = etiquetas;
+          chart.data.datasets[0].data = datos;
+          chart.update();
+        } else {
+          chart = new Chart(graficoCumplimientoCanvas.getContext('2d'), {
+            type: 'bar',
+            data: {
+              labels: etiquetas,
+              datasets: [{
+                label: '% Cumplimiento',
+                data: datos,
+                backgroundColor: '#2563eb'
+              }]
+            },
+            options: {
+              responsive: true,
+              scales: {
+                y: {
+                  beginAtZero: true,
+                  max: 100,
+                  ticks: { stepSize: 10 },
+                  title: { display: true, text: 'Porcentaje (%)' }
+                },
+                x: {
+                  ticks: { maxRotation: 90, minRotation: 45 }
+                }
+              },
+              plugins: {
+                legend: { display: false },
+                tooltip: { enabled: true }
+              }
+            }
+          });
+        }
+      }
+
       inputArchivo.addEventListener('change', () => {
         mensajeArchivo.textContent = '';
         resumenDashboard.style.display = 'none';
         tablaResultados.innerHTML = '';
         selectorLicitaciones.style.display = 'none';
         selectorLicitaciones.innerHTML = '<option value="" disabled selected>Seleccione una licitación</option>';
+        ordenLicitacionesSection.style.display = 'none';
+        tablaOrdenLicitacionesBody.innerHTML = '';
+        licitacionesCargadas = [];
 
         const archivos = Array.from(inputArchivo.files);
         if (archivos.length === 0) {
@@ -873,7 +987,6 @@
           return;
         }
 
-        // Cargamos todos los archivos
         let archivosProcesados = 0;
         let errorOcurrido = false;
 
@@ -892,20 +1005,31 @@
                 errorOcurrido = true;
                 return;
               }
-              // Extraer info para título: empresa + fecha
               let titulo = 'Licitación sin nombre';
               if (datos.informacionEvaluacion) {
                 const empresa = datos.informacionEvaluacion.nombreEmpresa || '';
                 const fecha = datos.informacionEvaluacion.fecha || '';
                 titulo = empresa && fecha ? `${empresa} (${fecha})` : empresa || fecha || titulo;
               }
-              licitacionesCargadas.push({ titulo, requisitos: datos.requisitos });
+
+              let cumplidos = 0;
+              datos.requisitos.forEach(r => {
+                if (r.estado === 'CUMPLE') cumplidos++;
+              });
+              const total = datos.requisitos.length;
+              const porcentajeCumplimiento = total === 0 ? 0 : (cumplidos / total) * 100;
+
+              licitacionesCargadas.push({
+                titulo,
+                requisitos: datos.requisitos,
+                cumplidos,
+                total,
+                porcentajeCumplimiento
+              });
 
               archivosProcesados++;
               if (archivosProcesados === archivos.length && !errorOcurrido) {
-                // Terminar carga: mostrar selector y primera licitación
                 selectorLicitaciones.style.display = 'block';
-                // Llenar opciones
                 selectorLicitaciones.innerHTML = '<option value="" disabled selected>Seleccione una licitación</option>';
                 licitacionesCargadas.forEach((lic, i) => {
                   const option = document.createElement('option');
@@ -913,9 +1037,9 @@
                   option.textContent = lic.titulo;
                   selectorLicitaciones.appendChild(option);
                 });
-                // Seleccionar la primera
                 selectorLicitaciones.selectedIndex = 1;
                 mostrarLicitacion(0);
+                actualizarOrdenYGrafica();
               }
             } catch (error) {
               mensajeArchivo.textContent = `Error leyendo JSON en archivo ${archivo.name}: ${error.message}`;
@@ -930,7 +1054,6 @@
         const index = parseInt(e.target.value, 10);
         mostrarLicitacion(index);
       });
-
     })();
   </script>
 </body>
