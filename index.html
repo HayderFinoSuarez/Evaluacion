@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Formulario de Evaluación de Licitación con Dashboard</title>
+  <title>Evaluación de Licitación con Dashboard Múltiple</title>
   <style>
     /* Reset y base */
     * {
@@ -348,6 +348,10 @@
       .menu button {
         max-width: 100%;
       }
+      .estadisticas {
+        flex-direction: column;
+        align-items: stretch;
+      }
     }
 
     /* Dashboard */
@@ -431,6 +435,18 @@
       color: #6b7280;
       font-style: italic;
     }
+
+    /* Selector de licitaciones */
+    #selectorLicitaciones {
+      width: 100%;
+      max-width: 400px;
+      margin: 12px 0 24px 0;
+      padding: 8px 12px;
+      border-radius: 0.5rem;
+      border: 1px solid #d1d5db;
+      font-size: 1rem;
+    }
+
   </style>
 </head>
 <body>
@@ -504,8 +520,13 @@
     <section id="seccionDashboard" role="tabpanel" tabindex="0" aria-labelledby="tabDashboard">
       <div class="dashboard">
         <h2>Dashboard de Resultados de Evaluación</h2>
-        <input type="file" id="inputArchivo" accept=".json" aria-label="Importar archivo JSON de evaluación" />
+        <input type="file" id="inputArchivo" accept=".json" aria-label="Importar archivos JSON de evaluación" multiple />
         <div id="mensajeArchivo" role="alert" style="color:#ef4444; margin-top:8px;"></div>
+
+        <!-- Selector para múltiples licitaciones -->
+        <select id="selectorLicitaciones" aria-label="Seleccionar licitación para ver detalles" style="display:none;">
+          <option value="" disabled selected>Seleccione una licitación</option>
+        </select>
 
         <div id="resumenDashboard" style="display:none;">
           <div class="estadisticas" aria-live="polite" aria-atomic="true">
@@ -575,8 +596,7 @@
       btnEvaluacion.addEventListener('click', () => cambiarSeccion('evaluacion'));
       btnDashboard.addEventListener('click', () => cambiarSeccion('dashboard'));
 
-      // --- Código existente para evaluación ---
-      // Lista de requisitos iniciales
+      // --- Código para evaluación ---
       const requisitos = [
         { id: 1, categoria: 'DOCUMENTACIÓN DE PRESENTACIÓN', descripcion: 'Entrega puntual conforme a las especificaciones establecidas, incluyendo el cumplimiento de sobre totalmente sellado.', estado: null },
         { id: 2, categoria: 'DOCUMENTACIÓN DE PRESENTACIÓN', descripcion: 'Carta de presentación de la propuesta', estado: null },
@@ -602,7 +622,6 @@
         { id: 22, categoria: 'PLANIFICACIÓN ESTRATÉGICA Y DE CAPACITACIÓN', descripcion: 'Calidad y detalle de la documentación entregada y soporte ofrecido.', estado: null }
       ];
 
-      // Estado interno
       const estado = {
         datosEvaluacion: {
           nombreEmpresa: '',
@@ -610,10 +629,9 @@
           fecha: new Date().toISOString().split('T')[0],
           observaciones: ''
         },
-        requisitos: JSON.parse(JSON.stringify(requisitos)) // copia profunda para no modificar original
+        requisitos: JSON.parse(JSON.stringify(requisitos))
       };
 
-      // Selectores DOM evaluación
       const inputNombreEmpresa = document.getElementById('nombreEmpresa');
       const inputNombreEvaluador = document.getElementById('nombreEvaluador');
       const inputFecha = document.getElementById('fechaEvaluacion');
@@ -623,7 +641,6 @@
       const porcentajeCumplimiento = document.getElementById('porcentajeCumplimiento');
       const botonExportar = document.getElementById('botonExportar');
 
-      // Iconos SVG simples para categorías
       const iconos = {
         'DOCUMENTACIÓN': `<svg class="icono" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>`,
         'INSTITUCIONAL': `<svg class="icono" viewBox="0 0 24 24"><path d="M3 21v-8l9-4 9 4v8"/></svg>`,
@@ -634,7 +651,6 @@
         'PLANIFICACIÓN': `<svg class="icono" viewBox="0 0 24 24"><polyline points="4 17 10 11 13 14 20 7"/><circle cx="20" cy="7" r="2"/></svg>`
       };
 
-      // Obtener icono según categoría
       function obtenerIcono(categoria) {
         if (categoria.includes('DOCUMENTACIÓN')) return iconos['DOCUMENTACIÓN'];
         if (categoria.includes('INSTITUCIONAL')) return iconos['INSTITUCIONAL'];
@@ -646,7 +662,6 @@
         return iconos['DOCUMENTACIÓN'];
       }
 
-      // Agrupar requisitos por categoría
       function agruparRequisitos(lista) {
         return lista.reduce((acum, req) => {
           if (!acum[req.categoria]) acum[req.categoria] = [];
@@ -655,7 +670,6 @@
         }, {});
       }
 
-      // Renderizar requisitos en el DOM
       function renderizarRequisitos() {
         const agrupados = agruparRequisitos(estado.requisitos);
         seccionRequisitos.innerHTML = '';
@@ -690,7 +704,6 @@
             const grupoBotones = document.createElement('div');
             grupoBotones.className = 'grupo-botones';
 
-            // Botón CUMPLE
             const botonCumple = document.createElement('button');
             botonCumple.type = 'button';
             botonCumple.className = 'boton-estado';
@@ -701,7 +714,6 @@
             botonCumple.addEventListener('click', () => actualizarEstadoRequisito(req.id, true));
             grupoBotones.appendChild(botonCumple);
 
-            // Botón NO CUMPLE
             const botonNoCumple = document.createElement('button');
             botonNoCumple.type = 'button';
             botonNoCumple.className = 'boton-estado';
@@ -720,7 +732,6 @@
         });
       }
 
-      // Actualizar estado de requisito
       function actualizarEstadoRequisito(id, estadoNuevo) {
         const requisito = estado.requisitos.find(r => r.id === id);
         if (requisito) {
@@ -730,7 +741,6 @@
         }
       }
 
-      // Actualizar puntajes y porcentajes
       function actualizarPuntajes() {
         const cumplidos = estado.requisitos.filter(r => r.estado === true).length;
         const total = estado.requisitos.length;
@@ -739,12 +749,10 @@
         porcentajeCumplimiento.textContent = `${porcentaje}%`;
       }
 
-      // Actualizar datos de evaluación desde inputs
       function actualizarDatosEvaluacion(campo, valor) {
         estado.datosEvaluacion[campo] = valor;
       }
 
-      // Exportar resultados a JSON y descargar
       function exportarResultados() {
         const resultados = {
           informacionEvaluacion: estado.datosEvaluacion,
@@ -770,7 +778,6 @@
         URL.revokeObjectURL(url);
       }
 
-      // Inicializar inputs con valores
       function inicializarInputs() {
         inputNombreEmpresa.value = estado.datosEvaluacion.nombreEmpresa;
         inputNombreEvaluador.value = estado.datosEvaluacion.nombreEvaluador;
@@ -778,22 +785,21 @@
         textareaObservaciones.value = estado.datosEvaluacion.observaciones;
       }
 
-      // Escuchar eventos de inputs
       inputNombreEmpresa.addEventListener('input', e => actualizarDatosEvaluacion('nombreEmpresa', e.target.value));
       inputNombreEvaluador.addEventListener('input', e => actualizarDatosEvaluacion('nombreEvaluador', e.target.value));
       inputFecha.addEventListener('input', e => actualizarDatosEvaluacion('fecha', e.target.value));
       textareaObservaciones.addEventListener('input', e => actualizarDatosEvaluacion('observaciones', e.target.value));
       botonExportar.addEventListener('click', exportarResultados);
 
-      // Inicializar todo
+      iniciar();
+
       function iniciar() {
         inicializarInputs();
         renderizarRequisitos();
         actualizarPuntajes();
       }
-      iniciar();
 
-      // --- NUEVO: Dashboard importación y visualización ---
+      // --- Dashboard con múltiples licitaciones ---
 
       const inputArchivo = document.getElementById('inputArchivo');
       const mensajeArchivo = document.getElementById('mensajeArchivo');
@@ -803,83 +809,131 @@
       const numNoEvaluado = document.getElementById('numNoEvaluado');
       const porcentajeDashboard = document.getElementById('porcentajeDashboard');
       const tablaResultados = document.getElementById('tablaResultados');
+      const selectorLicitaciones = document.getElementById('selectorLicitaciones');
+
+      // Almacenaremos aquí las licitaciones cargadas
+      const licitacionesCargadas = [];
+
+      // Función para mostrar resumen y tabla de una licitación dada
+      function mostrarLicitacion(index) {
+        if (index < 0 || index >= licitacionesCargadas.length) return;
+        const licitacion = licitacionesCargadas[index];
+
+        // Estadísticas
+        let cumpleCount = 0;
+        let noCumpleCount = 0;
+        let noEvaluadoCount = 0;
+        licitacion.requisitos.forEach(r => {
+          if (r.estado === 'CUMPLE') cumpleCount++;
+          else if (r.estado === 'NO CUMPLE') noCumpleCount++;
+          else noEvaluadoCount++;
+        });
+        const total = licitacion.requisitos.length;
+        const porcentaje = total === 0 ? 0 : ((cumpleCount / total) * 100).toFixed(1);
+
+        numCumple.textContent = cumpleCount;
+        numNoCumple.textContent = noCumpleCount;
+        numNoEvaluado.textContent = noEvaluadoCount;
+        porcentajeDashboard.textContent = porcentaje + '%';
+
+        // Tabla
+        tablaResultados.innerHTML = '';
+        licitacion.requisitos.forEach(r => {
+          const tr = document.createElement('tr');
+          const tdId = document.createElement('td');
+          tdId.textContent = r.id;
+          const tdDesc = document.createElement('td');
+          tdDesc.textContent = r.descripcion;
+          const tdEstado = document.createElement('td');
+          tdEstado.textContent = r.estado;
+          if (r.estado === 'CUMPLE') tdEstado.className = 'estado-cumple';
+          else if (r.estado === 'NO CUMPLE') tdEstado.className = 'estado-no-cumple';
+          else tdEstado.className = 'estado-no-evaluado';
+
+          tr.appendChild(tdId);
+          tr.appendChild(tdDesc);
+          tr.appendChild(tdEstado);
+
+          tablaResultados.appendChild(tr);
+        });
+
+        resumenDashboard.style.display = 'block';
+      }
 
       inputArchivo.addEventListener('change', () => {
         mensajeArchivo.textContent = '';
         resumenDashboard.style.display = 'none';
         tablaResultados.innerHTML = '';
+        selectorLicitaciones.style.display = 'none';
+        selectorLicitaciones.innerHTML = '<option value="" disabled selected>Seleccione una licitación</option>';
 
-        const archivo = inputArchivo.files[0];
-        if (!archivo) {
+        const archivos = Array.from(inputArchivo.files);
+        if (archivos.length === 0) {
           mensajeArchivo.textContent = 'No se seleccionó ningún archivo.';
           return;
         }
-        if (!archivo.name.endsWith('.json')) {
-          mensajeArchivo.textContent = 'Por favor, seleccione un archivo JSON válido.';
-          return;
-        }
 
-        const lector = new FileReader();
-        lector.onload = (e) => {
-          try {
-            const datos = JSON.parse(e.target.result);
-            if (!datos.requisitos || !Array.isArray(datos.requisitos)) {
-              mensajeArchivo.textContent = 'Archivo JSON inválido o estructura no reconocida.';
-              return;
-            }
+        // Cargamos todos los archivos
+        let archivosProcesados = 0;
+        let errorOcurrido = false;
 
-            // Contar estados
-            let cumpleCount = 0;
-            let noCumpleCount = 0;
-            let noEvaluadoCount = 0;
-            datos.requisitos.forEach(r => {
-              if (r.estado === 'CUMPLE') cumpleCount++;
-              else if (r.estado === 'NO CUMPLE') noCumpleCount++;
-              else noEvaluadoCount++;
-            });
-            const total = datos.requisitos.length;
-            const porcentaje = total === 0 ? 0 : ((cumpleCount / total) * 100).toFixed(1);
-
-            // Mostrar resumen
-            numCumple.textContent = cumpleCount;
-            numNoCumple.textContent = noCumpleCount;
-            numNoEvaluado.textContent = noEvaluadoCount;
-            porcentajeDashboard.textContent = porcentaje + '%';
-
-            // Mostrar tabla
-            tablaResultados.innerHTML = '';
-            datos.requisitos.forEach(r => {
-              const tr = document.createElement('tr');
-              const tdId = document.createElement('td');
-              tdId.textContent = r.id;
-              const tdDesc = document.createElement('td');
-              tdDesc.textContent = r.descripcion;
-              const tdEstado = document.createElement('td');
-              tdEstado.textContent = r.estado;
-              if (r.estado === 'CUMPLE') tdEstado.className = 'estado-cumple';
-              else if (r.estado === 'NO CUMPLE') tdEstado.className = 'estado-no-cumple';
-              else tdEstado.className = 'estado-no-evaluado';
-
-              tr.appendChild(tdId);
-              tr.appendChild(tdDesc);
-              tr.appendChild(tdEstado);
-
-              tablaResultados.appendChild(tr);
-            });
-
-            resumenDashboard.style.display = 'block';
-            mensajeArchivo.textContent = '';
-
-          } catch (error) {
-            mensajeArchivo.textContent = 'Error al leer el archivo JSON: ' + error.message;
+        archivos.forEach((archivo, idx) => {
+          if (!archivo.name.endsWith('.json')) {
+            mensajeArchivo.textContent = `Archivo no válido: ${archivo.name}`;
+            errorOcurrido = true;
+            return;
           }
-        };
-        lector.readAsText(archivo);
+          const lector = new FileReader();
+          lector.onload = (e) => {
+            try {
+              const datos = JSON.parse(e.target.result);
+              if (!datos.requisitos || !Array.isArray(datos.requisitos)) {
+                mensajeArchivo.textContent = `Archivo JSON inválido: ${archivo.name}`;
+                errorOcurrido = true;
+                return;
+              }
+              // Extraer info para título: empresa + fecha
+              let titulo = 'Licitación sin nombre';
+              if (datos.informacionEvaluacion) {
+                const empresa = datos.informacionEvaluacion.nombreEmpresa || '';
+                const fecha = datos.informacionEvaluacion.fecha || '';
+                titulo = empresa && fecha ? `${empresa} (${fecha})` : empresa || fecha || titulo;
+              }
+              licitacionesCargadas.push({ titulo, requisitos: datos.requisitos });
+
+              archivosProcesados++;
+              if (archivosProcesados === archivos.length && !errorOcurrido) {
+                // Terminar carga: mostrar selector y primera licitación
+                selectorLicitaciones.style.display = 'block';
+                // Llenar opciones
+                selectorLicitaciones.innerHTML = '<option value="" disabled selected>Seleccione una licitación</option>';
+                licitacionesCargadas.forEach((lic, i) => {
+                  const option = document.createElement('option');
+                  option.value = i;
+                  option.textContent = lic.titulo;
+                  selectorLicitaciones.appendChild(option);
+                });
+                // Seleccionar la primera
+                selectorLicitaciones.selectedIndex = 1;
+                mostrarLicitacion(0);
+              }
+            } catch (error) {
+              mensajeArchivo.textContent = `Error leyendo JSON en archivo ${archivo.name}: ${error.message}`;
+              errorOcurrido = true;
+            }
+          };
+          lector.readAsText(archivo);
+        });
       });
+
+      selectorLicitaciones.addEventListener('change', (e) => {
+        const index = parseInt(e.target.value, 10);
+        mostrarLicitacion(index);
+      });
+
     })();
   </script>
 </body>
 </html>
-
 
                                     
